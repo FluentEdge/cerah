@@ -12,6 +12,7 @@ from requests import post as request_post
 # ----------------------------------------------------------------------------
 env_var_names = (
     'HEROKU_API_KEY',
+    'HEROKU_BASE_APP_NAME'
     #'SPECIAL_SECRET',
 )
 env = {}
@@ -34,8 +35,10 @@ def set_heroku_config(application_name, key, value):
 # ----------------------------------------------------------------------------
 @post('/pr_created')
 def pr_created():
-    print request.json
-    return "asdf"
+    pr_number = request.json["pull_request"]["number"]
+    new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
+    set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
+    return "OK"
 
 
 @get("/")
