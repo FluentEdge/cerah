@@ -13,7 +13,7 @@ from hashlib import sha1
 # ----------------------------------------------------------------------------
 env_var_names = (
     'HEROKU_API_KEY',
-    'HEROKU_BASE_APP_NAME'
+    'HEROKU_BASE_APP_NAME',
     'SPECIAL_SECRET',
 )
 env = {}
