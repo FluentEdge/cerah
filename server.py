@@ -1,8 +1,8 @@
-import json
 import heroku3
 import hmac
 import logging
 import os
+import time
 
 from bottle import get, run, post, request, HTTPError
 from hashlib import sha1
@@ -27,8 +27,15 @@ for name in env_var_names:
 # ----------------------------------------------------------------------------
 def set_heroku_config(application_name, key, value):
     conn = heroku3.from_key(env['HEROKU_API_KEY'])
-    app = conn.apps()[application_name]
-    app.config()[key] = value  # this actually saves itself when you set it!
+
+    # Try at most 5 times to do this
+    for _ in range(5):
+        if conn.apps().get(application_name):
+            app = conn.apps()[application_name]
+            app.config()[key] = value  # this actually saves itself when you set it!
+            return True
+        time.sleep(5)
+    return False
 
 
 # ----------------------------------------------------------------------------
@@ -48,8 +55,11 @@ def pr_created():
     # The message has been verified, so let's process it!
     pr_number = request.json["pull_request"]["number"]
     new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
-    set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
-    return "OK"
+    result = set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
+    if result:
+        return "OK"
+    else:
+        return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
 
 
 @get("/")
