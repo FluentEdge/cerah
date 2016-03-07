@@ -1,3 +1,6 @@
 webtest
 pytest
 mock
+
+# circle needs this?
+funcsigs
