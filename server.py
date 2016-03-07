@@ -53,7 +53,6 @@ def pr_created():
     payload = request.body.read()
     # Example received signature: "sha1=51fb5125e4e65aa893911c89de283576d9c821b5"
     received_sig = request.headers['X-Hub-Signature'].split('=', 1)[1]
-    print request.body.read()
     computed_sig = hmac.new(env["SPECIAL_SECRET"], payload, sha1).hexdigest()
     if received_sig != computed_sig:
         logging.error('Received signature %r does not match' % received_sig)

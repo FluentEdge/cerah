@@ -30,7 +30,6 @@ class SairahTests(TestCase):
         if extra_payload:
             payload.update(extra_payload)
         if 'headers' not in kwargs:
-            print json.dumps(payload)
             signature = hmac.new(SECRET, body, sha1).hexdigest()
             kwargs['headers'] = {'X-Hub-Signature': "sha={}".format(signature)}
         if 'content_type' not in kwargs:
