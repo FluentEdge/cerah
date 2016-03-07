@@ -4,22 +4,28 @@ import logging
 import os
 import time
 
-from bottle import get, run, post, request, HTTPError
+from bottle import Bottle, get, run, post, request, HTTPError
 from hashlib import sha1
+
+
+app = Bottle()
 
 
 # ----------------------------------------------------------------------------
 # Settings
 # ----------------------------------------------------------------------------
-env_var_names = (
-    'HEROKU_API_KEY',
-    'HEROKU_BASE_APP_NAME',
+required_env_var_names = (
     'SPECIAL_SECRET',
 )
+optional_env_var_names = (
+    'HEROKU_API_KEY',
+    'HEROKU_BASE_APP_NAME',
+)
 env = {}
-for name in env_var_names:
+for name in required_env_var_names + optional_env_var_names:
     env[name] = os.environ.get(name, None)
-    assert env[name], "Missing environment variable: %s" % name
+    if env[name] in required_env_var_names:
+        assert env[name], "Missing environment variable: %s" % name
 
 
 # ----------------------------------------------------------------------------
@@ -41,28 +47,33 @@ def set_heroku_config(application_name, key, value):
 # ----------------------------------------------------------------------------
 # Views
 # ----------------------------------------------------------------------------
-@post('/pr_created')
+@app.post('/pr_created')
 def pr_created():
     # We need to verify the message we received against our secret
     payload = request.body.read()
     # Example received signature: "sha1=51fb5125e4e65aa893911c89de283576d9c821b5"
     received_sig = request.headers['X-Hub-Signature'].split('=', 1)[1]
+    print request.body.read()
     computed_sig = hmac.new(env["SPECIAL_SECRET"], payload, sha1).hexdigest()
     if received_sig != computed_sig:
         logging.error('Received signature %r does not match' % received_sig)
         raise HTTPError(403, 'Signature mismatch')
 
     # The message has been verified, so let's process it!
-    pr_number = request.json["pull_request"]["number"]
-    new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
-    result = set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
-    if result:
-        return "OK"
-    else:
-        return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
+
+    what_i_done = []
+
+    if 'HEROKU_BASE_APP_NAME' in env:
+        pr_number = request.json["pull_request"]["number"]
+        new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
+        result = set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
+        if not result:
+            return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
+        what_i_done.append("Setup Heroku base app name\n")
+    return "OK, here's what I did: \n{}".format(what_i_done)
 
 
-@get("/")
+@app.get("/")
 def nice_index():
     return "Hello, I am <a href='https://github.com/FluentEdge/SAIRAH'>SAIRAH</a> a bot to help with deployments!"
 

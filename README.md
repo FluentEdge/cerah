@@ -25,9 +25,15 @@ heroku ps:scale web=1
 Set these environment variables
 
 ```
+# Required
 SPECIAL_SECRET=secret-you-set-in-github-webhooks-configuration
+
+# Set Heroku app name in environment so you can get full domain name within app
 HEROKU_API_KEY=asdf1234-asdf1234-asdf1234
 HEROKU_BASE_APP_NAME=your-app
+
+# Set GitHub API keys
+
 ```
 
 `HEROKU_BASE_APP_NAME` would be your original heroku app with review apps spawning from it.
