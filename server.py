@@ -72,14 +72,6 @@ def pr_created():
     return "OK, here's what I did: \n{}".format(what_i_done)
 
 
-@app.get('/ping')
-def ping():
-    print dir(request)
-    print request.remote_addr
-    print request.remote_route
-    return 'asdf'
-
-
 @app.get("/")
 def nice_index():
     return "Hello, I am <a href='https://github.com/FluentEdge/SAIRAH'>SAIRAH</a> a bot to help with deployments!"
