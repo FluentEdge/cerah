@@ -68,8 +68,8 @@ def pr_created():
         result = set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
         if not result:
             return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
-        what_i_done.append("Setup Heroku base app name\n")
-    return "OK, here's what I did: \n{}".format(what_i_done)
+        what_i_done.append("Setup Heroku base app name")
+    return "OK, here's what I did: \n{}".format(what_i_done.join('\n'))
 
 
 @app.get("/")
