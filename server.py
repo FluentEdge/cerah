@@ -72,6 +72,14 @@ def pr_created():
     return "OK, here's what I did: \n{}".format(what_i_done)
 
 
+@app.get('/ping')
+def ping():
+    print dir(request)
+    print request.remote_addr
+    print request.remote_route
+    return 'asdf'
+
+
 @app.get("/")
 def nice_index():
     return "Hello, I am <a href='https://github.com/FluentEdge/SAIRAH'>SAIRAH</a> a bot to help with deployments!"
@@ -82,4 +90,4 @@ def nice_index():
 # ----------------------------------------------------------------------------
 # Heroku sets PORT env var
 if __name__ == '__main__':
-    run(host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
+    run(app=app, host="0.0.0.0", port=int(os.environ.get("PORT", 5000)))
