@@ -69,7 +69,10 @@ def pr_created():
         if not result:
             return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
         what_i_done.append("Setup Heroku base app name")
-    return "OK, here's what I did: \n{}".format('\n'.join(what_i_done))
+
+    # Format what we did so tabs in front, newline on end
+    what_i_done = ["\t{}\n".format(s) for s in what_i_done]
+    return "OK, here's what I did: \n{}".format(''.join(what_i_done))
 
 
 @app.get("/")
