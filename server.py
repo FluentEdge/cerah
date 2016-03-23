@@ -7,9 +7,7 @@ import time
 from bottle import Bottle, get, run, post, request, HTTPError
 from hashlib import sha1
 
-
 app = Bottle()
-
 
 # ----------------------------------------------------------------------------
 # Settings
@@ -20,6 +18,11 @@ required_env_var_names = (
 optional_env_var_names = (
     'HEROKU_API_KEY',
     'HEROKU_BASE_APP_NAME',
+
+    # S3 stuff
+    'AWS_ACCESS_KEY_ID',
+    'AWS_SECRET_ACCESS_KEY',
+    'AWS_STORAGE_BUCKET_NAME',
 )
 env = {}
 for name in required_env_var_names + optional_env_var_names:
@@ -60,15 +63,25 @@ def pr_created():
 
     # The message has been verified, so let's process it!
 
+    # Get new heroku app name
+    pr_number = request.json["pull_request"]["number"]
+    new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
+
     what_i_done = []
 
     if 'HEROKU_BASE_APP_NAME' in env:
-        pr_number = request.json["pull_request"]["number"]
-        new_app_name = "{}-pr-{}".format(env['HEROKU_BASE_APP_NAME'], pr_number)
         result = set_heroku_config(new_app_name, "HEROKU_APP_NAME", new_app_name)
         if not result:
             return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
         what_i_done.append("Setup Heroku base app name")
+
+    if 'AWS_STORAGE_BUCKET_NAME' in env:
+        aws_config_vars = ('AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_STORAGE_BUCKET_NAME',)
+        for var in aws_config_vars:
+            result = set_heroku_config(new_app_name, var, env[var])
+            if not result:
+                return "Could not find {} heroku app to set config stuff up...".format(new_app_name)
+        what_i_done.append("Setup AWS storage for {}".format(env['AWS_STORAGE_BUCKET_NAME']))
 
     # Format what we did so tabs in front, newline on end
     what_i_done = ["\t{}\n".format(s) for s in what_i_done]
