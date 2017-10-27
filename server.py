@@ -55,7 +55,7 @@ def pr_created():
     # We need to verify the message we received against our secret
     payload = request.body.read()
     print("PR Created request headers:")
-    print(request.headers)
+    print(request.headers.items())
     # Example received signature: "sha1=51fb5125e4e65aa893911c89de283576d9c821b5"
     received_sig = request.headers['X-Hub-Signature'].split('=', 1)[1]
     computed_sig = hmac.new(env["SPECIAL_SECRET"], payload, sha1).hexdigest()
